@@ -16,21 +16,39 @@ const Home = () => {
       setError(null);
       console.log('Fetching products...');
       
+      let data;
+      
       if (keyword) {
         const res = await api.get('products/search', { params: { keyword } });
-        setProducts(res.data);
-        return;
-      }
-
-      if (category !== 'ALL') {
+        data = res.data;
+      } else if (category !== 'ALL') {
         const res = await api.get(`products/category/${category}`);
-        setProducts(res.data);
-        return;
+        data = res.data;
+      } else {
+        const res = await api.get('products');
+        data = res.data;
       }
 
-      const res = await api.get('products');
-      setProducts(res.data);
-      console.log('Products loaded:', res.data.length);
+      // Handle various response formats
+      let productsArray = [];
+      if (Array.isArray(data)) {
+        productsArray = data;
+      } else if (data && typeof data === 'object' && Array.isArray(data.products)) {
+        productsArray = data.products;
+      } else if (data && typeof data === 'object' && Array.isArray(data.data)) {
+        productsArray = data.data;
+      } else if (data && typeof data === 'object') {
+        // Try to find any array in the response
+        for (const key in data) {
+          if (Array.isArray(data[key])) {
+            productsArray = data[key];
+            break;
+          }
+        }
+      }
+
+      setProducts(Array.isArray(productsArray) ? productsArray : []);
+      console.log('Products loaded:', productsArray.length);
     } catch (err) {
       console.error('Error fetching products:', err);
       setError(err.message || 'Failed to load products. Please check your API configuration.');
