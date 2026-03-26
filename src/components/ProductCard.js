@@ -70,7 +70,7 @@ const ProductCard = ({ product, onRefresh }) => {
       <div className="relative">
         {product.imagePath ? (
           <img
-            src={`http://localhost:8080${product.imagePath}`}
+            src={`${process.env.REACT_APP_API_URL?.replace('/api', '') || 'https://campusconnect-backend-1-kuoh.onrender.com'}${product.imagePath}`}
             alt={product.title}
             className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
           />
