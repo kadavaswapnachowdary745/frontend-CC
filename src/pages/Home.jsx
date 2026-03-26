@@ -8,10 +8,14 @@ const Home = () => {
   const [category, setCategory] = useState('ALL');
   const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      setError(null);
+      console.log('Fetching products...');
+      
       if (keyword) {
         const res = await api.get('products/search', { params: { keyword } });
         setProducts(res.data);
@@ -26,8 +30,11 @@ const Home = () => {
 
       const res = await api.get('products');
       setProducts(res.data);
+      console.log('Products loaded:', res.data.length);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching products:', err);
+      setError(err.message || 'Failed to load products. Please check your API configuration.');
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -71,6 +78,19 @@ const Home = () => {
       </div>
 
       {/* Products Grid */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <h3 className="text-red-900 font-semibold mb-2">Error Loading Products</h3>
+          <p className="text-red-800 text-sm mb-4">{error}</p>
+          <p className="text-red-700 text-xs mb-3">API URL: {process.env.REACT_APP_API_URL || 'Not set (using /api)'}</p>
+          <button
+            onClick={() => fetchProducts()}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm"
+          >
+            Retry
+          </button>
+        </div>
+      )}
       {loading ? (
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
